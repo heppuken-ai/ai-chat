@@ -1,0 +1,10 @@
+export default function Spinner({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 ${className}`}
+      role="status"
+    >
+      <span className="sr-only">読み込み中...</span>
+    </div>
+  );
+}
