@@ -15,7 +15,7 @@ type Message = {
 type ConversationDetail = {
   id: string;
   title: string;
-  character: { name: string };
+  character: { name: string; avatarUrl?: string | null };
   messages: Message[];
 };
 
@@ -26,6 +26,7 @@ export default function ChatRoom({
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [characterName, setCharacterName] = useState("");
+  const [characterAvatar, setCharacterAvatar] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [loadingConv, setLoadingConv] = useState(true);
@@ -40,6 +41,7 @@ export default function ChatRoom({
       .then((data: ConversationDetail) => {
         setMessages(data.messages);
         setCharacterName(data.character.name);
+        setCharacterAvatar(data.character.avatarUrl || null);
       })
       .catch(() => showToast("会話の読み込みに失敗しました", "error"))
       .finally(() => setLoadingConv(false));
@@ -153,9 +155,31 @@ export default function ChatRoom({
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div className="group relative">
+                {/* Avatar - Left (Assistant) */}
+                {m.role === "assistant" && (
+                  <div className="flex-shrink-0">
+                    {characterAvatar ? (
+                      <img
+                        src={characterAvatar}
+                        alt={characterName}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-sm font-semibold text-white">
+                        {characterName.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Message */}
+                <div className="group relative flex flex-col">
+                  {/* Name tag */}
+                  {m.role === "assistant" && (
+                    <span className="mb-1 px-1 text-xs text-gray-500">{characterName}</span>
+                  )}
                   <div
                     className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
                       m.role === "user"
@@ -180,6 +204,15 @@ export default function ChatRoom({
                     </button>
                   )}
                 </div>
+
+                {/* Avatar - Right (User) */}
+                {m.role === "user" && (
+                  <div className="flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-blue-500 text-sm font-semibold text-white">
+                      You
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <div ref={bottomRef} />
